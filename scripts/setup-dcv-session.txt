@@ -1,0 +1,7 @@
+<persist>true</persist>
+<script>
+echo "Setting up DCV session"
+cd C:\Program Files\NICE\DCV\Server\bin
+dcv close-session "console"
+dcv create-session --type console --name "nice dcv session" --owner gmg_user gmg-user-session
+</script>
