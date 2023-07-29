@@ -54,23 +54,12 @@ function Show-WhatsUp {
 }
 
 function New-Ami {
-    param ($AmiType)
-
     Write-Output "Creating a new AMI"
 
     $startTime = Get-Date
 
-    Switch ($AmiType) {
-        "DCV" {
-            $packerBuildCommand = "packer build -var-file='dcv-gaming-svr.pkrvars.hcl' dcv-gaming-svr.pkr.hcl"
-            Invoke-Expression -Command $packerBuildCommand
-        }
-        "Parsec" {
-            $packerBuildCommand = "packer build -var-file='parsec-gaming-svr.pkrvars.hcl' parsec-gaming-svr.pkr.hcl"
-            Invoke-Expression -Command $packerBuildCommand
-        }
-        Default { Write-Output "Sorry, invalid AMI option" }
-    }
+    $packerBuildCommand = "packer build -var-file='parsec-dcv-gaming-svr.pkrvars.hcl' parsec-dcv-gaming-svr.pkr.hcl"
+    Invoke-Expression -Command $packerBuildCommand
 
     $endTime = Get-Date
     $executionTime = $endTime - $startTime
@@ -79,12 +68,12 @@ function New-Ami {
 }
 
 function SpinUp-Inst {
-    param ($AmiId, $InstType)
+    param ($AmiId, $InstType, $InstSize)
 
     Write-Output "Spinning up a spot request for AMI $AmiId"
 
     $startTime = Get-Date
-    $terraformApplyCommand = "terraform -chdir='./Terraform' apply -var='ami_id=$AmiId' -var='instance_type=$InstType'"
+    $terraformApplyCommand = "terraform -chdir='./Terraform' apply -var='ami_id=$AmiId' -var='instance_type=$InstType' -var='instance_size=$InstSize'"
     Invoke-Expression -Command $terraformApplyCommand
     $endTime = Get-Date
     $executionTime = $endTime - $startTime
@@ -112,9 +101,6 @@ function Save-Inst {
     $startTime = Get-Date
     $newImageId = New-EC2Image -InstanceId $InstId -Name $AmiName -Description "Mid-game: Saved AMI from running instance"
 
-    # $createCommand = "aws ec2 create-image --instance-id $InstId --name '$AmiName' --description 'Mid-game: Saved AMI from running instance'"
-    # Invoke-Expression -Command $createCommand
-    # $waitCommand = "aws ec2 wait image-available --image-ids "
     $endTime = Get-Date
     $executionTime = $endTime - $startTime
 
@@ -131,32 +117,27 @@ Write-Output "`nHere's what's up:"
 Show-WhatsUp
 
 Write-Output "`nWhat do you want to do?"
-Write-Output " 1. Create a new DCV AMI"
-Write-Output " 2. Create a new Parsec AMI"
-Write-Output " 3. Spin up an AMI"
-Write-Output " 3a. Spin up a 2xlarge instance of an AMI"
-Write-Output " 4. Save an AMI and snapshot of a running instance"
-Write-Output " 5. Destroy a running instance"
-Write-Output " 6. Just quit"
+Write-Output " 1. Create a new AMI"
+Write-Output " 2. Spin up an instance from an existing AMI"
+Write-Output " 3. Save an AMI and snapshot of a running instance"
+Write-Output " 4. Destroy a running instance"
+Write-Output " 5. (Or any other input) Just quit"
 
 $opt = Read-Host "`nWell?"
 Switch ($opt) {
-    "1" { New-Ami -AmiType "DCV" }
-    "2" { New-Ami -AmiType "Parsec" }
-    "3" { 
+    "1" { New-Ami }
+    "2" { 
         $Id = Read-Host "Give me the AMI ID" 
-        SpinUp-Inst -AmiId $Id -InstType "g4dn.xlarge"
+        $Instance_Type = "Give me the instance type"
+        $Instance_Size = "Give me the EBS volume size"
+        SpinUp-Inst -AmiId $Id -InstType $Instance_Type -InstSize $Instance_Size
     }
-    "3a" { 
-        $Id = Read-Host "Give me the AMI ID" 
-        SpinUp-Inst -AmiId $Id -InstType "g4dn.2xlarge"
-    }
-    "4" {
+    "3" {
         $InstId = Read-Host "Give me the ID of the instance to save"
         $AmiName = Read-Host "Name your new AMI"
         Save-Inst $InstId $AmiName
     }
-    "5" { 
+    "4" { 
         Destroy-Inst
     }
     default {
