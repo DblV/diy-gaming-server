@@ -1,7 +1,7 @@
 packer {
   required_plugins {
     amazon = {
-      version = ">= 1.1.5"
+      version = "~> 1"
       source  = "github.com/hashicorp/amazon"
     }
   }
@@ -9,7 +9,7 @@ packer {
 
 variable "ami_prefix" {
     type = string
-    default = "parsec-gmg-svr"
+    default = "gmg-svr"
 }
 
 variable "winrm_port" {
@@ -56,7 +56,7 @@ source "amazon-ebs" "gmg-svr" {
   region        = "eu-west-1"
   source_ami    = data.amazon-ami.gmg-svr.id
   force_deregister = "true"
-  user_data_file = "./shared-scripts/winrm-bootstrap.txt"
+  user_data_file = "./scripts/winrm-bootstrap.txt"
   communicator = "winrm"
   winrm_insecure = "true"
   winrm_port = "${var.winrm_port}"
@@ -64,7 +64,7 @@ source "amazon-ebs" "gmg-svr" {
   winrm_password = "${var.winrm_password}"
   winrm_use_ntlm = "true"
   winrm_use_ssl = "true"
-  winrm_timeout = "15m"
+  winrm_timeout = "20m"
   launch_block_device_mappings {
       device_name = "/dev/sda1"
       delete_on_termination = true

@@ -48,3 +48,6 @@ packer_cache/
 
 # For built boxes
 *.box
+
+# This contains a harcoded password!
+scripts/winrm-bootstrap.txt
