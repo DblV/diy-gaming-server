@@ -128,8 +128,8 @@ Switch ($opt) {
     "1" { New-Ami }
     "2" { 
         $Id = Read-Host "Give me the AMI ID" 
-        $Instance_Type = "Give me the instance type"
-        $Instance_Size = "Give me the EBS volume size"
+        $Instance_Type = Read-Host "Give me the instance type"
+        $Instance_Size = Read-Host "Give me the EBS volume size"
         SpinUp-Inst -AmiId $Id -InstType $Instance_Type -InstSize $Instance_Size
     }
     "3" {

@@ -46,10 +46,3 @@ resource "aws_spot_instance_request" "gaming_server_request" {
     volume_size = var.instance_size
   }
 }
-
-resource "aws_volume_attachment" "ebs_attachment" {
-  device_name = "/dev/sdb"
-  volume_id   = "vol-016629e1a8b867025"
-  instance_id = data.aws_instance.gaming_server.id
-}
-
